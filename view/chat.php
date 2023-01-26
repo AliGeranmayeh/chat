@@ -7,6 +7,7 @@ if (isset($_POST["edit"])) {
     $_SESSION["e-message"] = $_POST["edit-message"];
     $_SESSION["e-message-time"] = $_POST["e-message-time"];
     $_SESSION["e-message-pic"] = $_POST["e-message-pic"];
+    
 }
 ?>
 
@@ -21,12 +22,19 @@ if (isset($_POST["edit"])) {
     <link rel="stylesheet" href="styles/chat.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
     <title>chat</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.css" integrity="sha512-0Nyh7Nf4sn+T48aTb6VFkhJe0FzzcOlqqZMahy/rhZ8Ii5Q9ZXG/1CbunUuEbfgxqsQfWXjnErKZosDSHVKQhQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.js" integrity="sha512-aGWPnmdBhJ0leVHhQaRASgb0InV/Z2BWsscdj1Vwt29Oic91wECPixuXsWESpFfCcYPLfOlBZzN2nqQdMxlGTQ==" crossorigin="anonymous" referre ></script>
 </head>
 
 <body>
+    
     <section class="msger">
-        <main class="msger-chat">
+        <main class="msger-chat">   
             <?php
+            if ($_SESSION["auth"]==false) {
+                view("auth");
+            }
             $data = json_decode(file_get_contents(STORAGE . "messages.json"), true);
             if (!empty($data)) { ?>
                 <?php
@@ -44,13 +52,19 @@ if (isset($_POST["edit"])) {
                                     if (!empty($mess["message"]) && $mess["pic"] == null) {
                                         echo $mess["message"];
                                     } else { ?>
-                                        <img src="../chat<?php echo  $mess["pic"] ?>" alt="image">
+                                        <img src="../chat<?php echo  $mess["pic"] ?>" alt="image" style="max-height: 500px; max-width:500px;">
                                         <div><?php echo $mess["message"]; ?></div>
                                     <?php } ?>
                                 </div>
                                 <?php
                                 if (!empty($mess["message"])) { ?>
                                     <div class="d-flex my-1">
+                                        <?php if (!$mess["read"]) { ?>
+                                        <i class="bi bi-check2" style="font-size:19px;"></i>
+                                        <?php } ?>
+                                        <?php if ($mess["read"]) { ?>
+                                            <i class="bi bi-check2-all" style="font-size:19px; color:chartreuse"></i>
+                                        <?php } ?>
                                         <form method="post">
                                             <input type="hidden" name="edit-message" value="<?php echo $mess["message"]; ?>">
                                             <input type="hidden" name="e-message-time" value="<?php echo $mess["time"]; ?>">
@@ -77,6 +91,12 @@ if (isset($_POST["edit"])) {
                                 <?php
                                 if (empty($mess["message"])) { ?>
                                     <div class="d-flex my-1">
+                                    <?php if (!$mess["read"]) { ?>
+                                        <i class="bi bi-check2" style="font-size:19px;"></i>
+                                        <?php } ?>
+                                        <?php if ($mess["read"]) { ?>
+                                            <i class="bi bi-check2-all" style="font-size:19px; color:chartreuse"></i>
+                                        <?php } ?>
                                         <form action="./../chat/deleteconfog.php" method="post">
                                             <input type="hidden" name="delete_input" value="<?php echo $mess["message"]; ?>,,,<?php echo $mess["time"]; ?>,,,<?php echo $mess["pic"]; ?>">
                                             <button style="font-size: 10px; " type="submit" name="delete" class="p-1 btn btn-danger mx-1 ">DELETE</button>
@@ -99,7 +119,7 @@ if (isset($_POST["edit"])) {
                                     if (!empty($mess["message"]) && $mess["pic"] == null) {
                                         echo $mess["message"];
                                     } else { ?>
-                                        <img src="<?php echo "../chat/" . $mess["pic"] ?>" alt="image">
+                                        <img src="<?php echo "../chat/" . $mess["pic"] ?>" alt="image" style="max-height: 500px; max-width:500px;">
                                         <div class="msg-info-time"><?php echo $mess["message"]; ?></div>
                                     <?php } ?>
                                 </div>
@@ -109,16 +129,22 @@ if (isset($_POST["edit"])) {
                 <?php } ?>
             <?php } ?>
         </main>
-
+                                        
         <form class="msger-inputarea" action="./../chat/chatconfig.php" method="post" enctype="multipart/form-data">
-            <input name="userText" type="text" class="msger-input" placeholder="Enter your message..." value="<?php echo isset($_POST["edit"]) ? $_POST["edit-message"] : "" ?>" max="100">
+            <input  name="userText" type="text" class="msger-input" placeholder="Enter your message..." value="<?php echo isset($_POST["edit"]) ? $_POST["edit-message"] : "" ?>" pattern="^{,100}$" title="character limit is 100">
             <input name="userSendedPic" style="display: none;" id="file1" type="file" data-multiple-caption="{count} files selected" multiple />
             <label for="file1" style="padding-bottom:0px;padding-top:0px;"><i class="bi bi-image" style="font-size:30px;cursor: pointer; padding:0;"></i></label>
             <button type="submit" class="msger-send-btn" name="<?php echo isset($_POST["edit"])? "edit-btn": "submit" ?>">Send</button>
         </form>
     </section>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript">
+        $(document).ready(function() {
+            $(".msger-input").emojioneArea();
+        });
+    </script> -->
 </body>
 
 </html>

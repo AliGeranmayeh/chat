@@ -7,7 +7,8 @@ $input = [
     "message" => "",
     "pic" => "",
     "time" => "",
-    "seen" => []
+    "read" => false,
+    "seen" => [],
 ];
 
 if (!is_dir("./../img")) {
@@ -15,6 +16,30 @@ if (!is_dir("./../img")) {
 }
 $file = $_FILES['userSendedPic'] ?? null;
 $path = "";
+
+if ($_SESSION["auth"]) {
+    $data = json_decode(file_get_contents(STORAGE . "messages.json"), true);
+    foreach ($data as $key => $value) {
+        $seen_flag = true;
+        if ($value["username"] != $_SESSION["username"]) {
+            if ($data[$key]["seen"] != []) {
+                foreach ($data[$key]["seen"] as $value) {
+                    if ($value == $_SESSION["username"]) {
+                        $seen_flag = false;
+                        break;
+                    }
+                }
+            }
+            if ($seen_flag) {
+                $data[$key]["seen"][] = $_SESSION["username"];
+                $data[$key]["read"] = true;
+            }
+        }
+    }
+    file_put_contents(STORAGE . "messages.json", json_encode($data, JSON_PRETTY_PRINT));
+    view("chat");
+}
+
 if (isset($_POST["submit"]) && (!empty($_POST["userText"])) || !empty($file["tmp_name"])) {
     $data = json_decode(file_get_contents(STORAGE . "messages.json"), true);
     if (empty($data)) {
@@ -91,5 +116,23 @@ if (isset($_POST["edit-btn"]) && !empty($_POST["userText"])) {
     file_put_contents(STORAGE . "messages.json", json_encode($data, JSON_PRETTY_PRINT));
     view("chat");
 } else {
+    $data = json_decode(file_get_contents(STORAGE . "messages.json"), true);
+    foreach ($data as $key => $value) {
+        $seen_flag = true;
+        if ($value["username"] != $_SESSION["username"]) {
+            if ($data[$key]["seen"] != []) {
+                foreach ($data[$key]["seen"] as $value) {
+                    if ($value == $_SESSION["username"]) {
+                        $seen_flag = false;
+                        break;
+                    }
+                }
+            }
+            if ($seen_flag) {
+                $data[$key]["seen"][] = $_SESSION["username"];
+                $data[$key]["read"] = true;
+            }
+        }
+    }
     view("chat");
 }
