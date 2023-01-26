@@ -22,7 +22,7 @@ function unset_session(string $string)
 }
 function logout()
 {
-    unseNt_session("username");
+    unset_session("username");
 }
 
 function generateRandomString($length = 10)
