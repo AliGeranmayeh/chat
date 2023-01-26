@@ -63,6 +63,7 @@ body {
   padding: 15px;
   border-radius: 15px;
   background: #ececec;
+  overflow: hidden;
 }
 .msg-info {
   display: flex;
